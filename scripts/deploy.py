@@ -24,7 +24,7 @@ class ModelDeployer:
         try:
             # Créer le dépôt si non existant
             print(f"Vérification ou création du dépôt : {self.repo_name}")
-            api.create_repo(name=self.repo_name, token=self.api_token, exist_ok=True)
+            api.create_repo(repo_id=self.repo_name, token=self.api_token, exist_ok=True)
 
             # Déploiement du modèle
             print("Déploiement en cours...")

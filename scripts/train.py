@@ -1,20 +1,3 @@
-# Script d'Entraînement du Modèle (train.py)
-
-"""
-Ce script est responsable de l'entraînement du modèle de classification de sentiment en utilisant DistilBERT.
-Il prend en entrée les données prétraitées et entraîne le modèle avec des hyperparamètres définis.
-Le modèle entraîné est ensuite sauvegardé dans un répertoire spécifié.
-
-Fonctionnalités :
-1. Chargement des ensembles d'entraînement.
-2. Configuration du modèle DistilBERT.
-3. Entraînement du modèle avec suivi des métriques.
-4. Sauvegarde du modèle après l'entraînement.
-
-Exemple d'utilisation :
-    python train.py --train_path data/processed/train.csv --output_dir models/distilbert
-"""
-
 import pandas as pd
 from transformers import DistilBertTokenizer, DistilBertForSequenceClassification, Trainer, TrainingArguments
 from datasets import Dataset

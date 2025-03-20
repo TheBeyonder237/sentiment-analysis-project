@@ -1,17 +1,3 @@
-"""
-Ce script est chargé de déployer le modèle entraîné sur la plateforme Hugging Face.
-Il utilise l'API Hugging Face pour pousser les fichiers du modèle dans un dépôt distant.
-
-Fonctionnalités :
-1. Chargement du modèle depuis le répertoire local.
-2. Connexion à l'API Hugging Face via un token d'authentification.
-3. Envoi du modèle sur le dépôt distant.
-4. Vérification du déploiement réussi.
-
-Exemple d'utilisation :
-    python deploy.py --model_dir models/distilbert --repo_name username/sentiment-analysis --api_token HF_API_KEY
-"""
-
 from huggingface_hub import HfApi, HfFolder
 import argparse
 import os

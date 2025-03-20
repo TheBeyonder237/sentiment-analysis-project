@@ -1,17 +1,3 @@
-"""
-Ce script permet d'envoyer un e-mail de notification suite à l'entraînement, l'évaluation ou le déploiement du modèle.
-Il utilise le protocole SMTP pour envoyer un message à une ou plusieurs adresses e-mail.
-
-Fonctionnalités :
-1. Configuration de l'e-mail expéditeur et des destinataires.
-2. Création du contenu de l'e-mail avec un objet et un message personnalisé.
-3. Connexion sécurisée au serveur SMTP et envoi de l'e-mail.
-
-Exemple d'utilisation :
-    python send_email.py --smtp_user user@gmail.com --smtp_pass password --recipient notify@example.com \
-        --subject "Déploiement réussi" --message "Le modèle a été déployé avec succès sur Hugging Face."
-"""
-
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart

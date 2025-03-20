@@ -57,6 +57,7 @@ st.markdown("""
 # Load Model from Hugging Face
 @st.cache_resource
 def load_model():
+    
     model_name = "distilbert-base-uncased-finetuned-sst-2-english"  
     classifier = pipeline("text-classification", model=model_name, tokenizer=model_name, device=0 if DEVICE == "cuda" else -1)
     return classifier

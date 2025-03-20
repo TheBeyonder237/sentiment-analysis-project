@@ -40,7 +40,7 @@ class ModelDeployer:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Déploiement du modèle sur Hugging Face.")
     parser.add_argument("--model_dir", type=str, required=True, help="Répertoire contenant le modèle.")
-    parser.add_argument("--repo_name", type=str, required=True, help="Nom du dépôt Hugging Face (ex: username/model-name).")
+    parser.add_argument("--repo_name", type=str, required=True, help="Nom du dépôt Hugging Face (ex: DavidNgoue/sentiment-analysis-project).")
     parser.add_argument("--api_token", type=str, required=True, help="Token API Hugging Face.")
     args = parser.parse_args()
 

@@ -1,8 +1,8 @@
 
 {
     "threshold_score": 0.8,
-    "smtp_user": "user@gmail.com",
-    "smtp_pass": "password",
-    "hf_api_key": "HF_API_KEY",
-    "repo_name": "username/sentiment-analysis"
+    "smtp_user": "****",
+    "smtp_pass": "*****",
+    "hf_api_key": "****",
+    "repo_name": "****"
 }

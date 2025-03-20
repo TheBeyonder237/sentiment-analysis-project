@@ -71,3 +71,5 @@ jobs:
 
     - name: Génération de la documentation
       run: bash generate_docs.sh
+
+      

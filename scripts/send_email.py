@@ -4,6 +4,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 import argparse
+import os
 
 class EmailNotifier:
     def __init__(self, smtp_user, smtp_pass, recipient, subject, message):

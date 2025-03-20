@@ -76,7 +76,7 @@ class ModelTrainer:
             evaluation_strategy="epoch",
             per_device_train_batch_size=16,
             per_device_eval_batch_size=16,
-            num_train_epochs=10,
+            num_train_epochs=20,
             logging_dir="./logs",
             save_steps=10,
              eval_steps=10,

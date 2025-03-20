@@ -33,13 +33,13 @@ jobs:
       run: pip install -r requirements.txt
 
     - name: Prétraitement des données
-      run: python scripts/preprocessing.py --data_path data/sentiment_analysis.csv
+      run: python scripts/preprocessing.py --data_path datas/sentiment_analysis.csv
 
     - name: Entraînement du modèle
-      run: python scripts/train.py --train_path data/processed/train.csv
+      run: python scripts/train.py --train_path datas/processed/train.csv
 
     - name: Évaluation du modèle
-      run: python scripts/evaluate.py --test_path data/processed/test.csv --model_dir models/distilbert
+      run: python scripts/evaluate.py --test_path datas/processed/test.csv --model_dir models/distilbert
 
     - name: Vérification du score
       id: check_score

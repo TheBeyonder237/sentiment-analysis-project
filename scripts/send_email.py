@@ -1,38 +1,25 @@
+import argparse
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
-import argparse
 import os
 
 class EmailNotifier:
-    def __init__(self, smtp_user, smtp_pass, recipient, subject, message):
-        """
-        Initialise l'envoi d'e-mail avec les informations nécessaires.
-
-        Args:
-            smtp_user (str): Adresse e-mail de l'expéditeur.
-            smtp_pass (str): Mot de passe de l'expéditeur.
-            recipient (str): Adresse du destinataire.
-            subject (str): Objet de l'e-mail.
-            message (str): Contenu du message.
-        """
+    def __init__(self, smtp_user, smtp_pass, recipient, subject, message, attachment=None):
         self.smtp_user = smtp_user
         self.smtp_pass = smtp_pass
-        self.recipients = recipient.split(",")  
+        self.recipient = recipient
         self.subject = subject
         self.message = message
         self.attachment = attachment
 
     def send(self):
-        """
-        Envoie l'e-mail de notification en utilisant le serveur SMTP de Gmail.
-        """
         try:
             msg = MIMEMultipart()
             msg['From'] = self.smtp_user
-            msg['To'] = ", ".join(self.recipients)
+            msg['To'] = self.recipient
             msg['Subject'] = self.subject
             msg.attach(MIMEText(self.message, 'plain'))
 
@@ -57,7 +44,7 @@ class EmailNotifier:
             print(f"❌ Erreur lors de l'envoi de l'e-mail : {e}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Envoi d'un e-mail de notification.")
+    parser = argparse.ArgumentParser(description="Envoi d'un e-mail avec pièce jointe.")
     parser.add_argument("--smtp_user", type=str, required=True, help="Adresse e-mail de l'expéditeur.")
     parser.add_argument("--smtp_pass", type=str, required=True, help="Mot de passe de l'expéditeur.")
     parser.add_argument("--recipient", type=str, required=True, help="Adresse e-mail du destinataire.")
@@ -66,5 +53,12 @@ if __name__ == "__main__":
     parser.add_argument("--attachment", type=str, help="Chemin vers le fichier à joindre.")
     args = parser.parse_args()
 
-    notifier = EmailNotifier(smtp_user=args.smtp_user, smtp_pass=args.smtp_pass, recipient=args.recipient, subject=args.subject, message=args.message, attachment=args.attachment)
+    notifier = EmailNotifier(
+        smtp_user=args.smtp_user,
+        smtp_pass=args.smtp_pass,
+        recipient=args.recipient,
+        subject=args.subject,
+        message=args.message,
+        attachment=args.attachment
+    )
     notifier.send()

@@ -23,6 +23,7 @@ class EmailNotifier:
         self.recipients = recipient.split(",")  
         self.subject = subject
         self.message = message
+        self.attachment = attachment
 
     def send(self):
         """

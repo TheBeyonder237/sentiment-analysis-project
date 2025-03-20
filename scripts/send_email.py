@@ -1,6 +1,8 @@
 import smtplib
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 import argparse
 
 class EmailNotifier:
@@ -32,13 +34,25 @@ class EmailNotifier:
             msg['Subject'] = self.subject
             msg.attach(MIMEText(self.message, 'plain'))
 
+            # Ajouter la pièce jointe si spécifiée
+            if self.attachment and os.path.isfile(self.attachment):
+                with open(self.attachment, 'rb') as attachment_file:
+                    part = MIMEBase('application', 'zip')
+                    part.set_payload(attachment_file.read())
+                    encoders.encode_base64(part)
+                    part.add_header(
+                        'Content-Disposition',
+                        f'attachment; filename={os.path.basename(self.attachment)}'
+                    )
+                    msg.attach(part)
+
             with smtplib.SMTP('smtp.gmail.com', 587) as server:
                 server.starttls()
                 server.login(self.smtp_user, self.smtp_pass)
                 server.send_message(msg)
-                print(f"E-mail envoyé avec succès à {', '.join(self.recipients)}.")
+                print(f"✅ E-mail envoyé avec succès à {self.recipient}.")
         except Exception as e:
-            print(f"Erreur lors de l'envoi de l'e-mail : {e}")
+            print(f"❌ Erreur lors de l'envoi de l'e-mail : {e}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Envoi d'un e-mail de notification.")

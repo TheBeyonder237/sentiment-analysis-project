@@ -1,17 +1,3 @@
-"""
-Ce script est chargé d'évaluer les performances du modèle entraîné pour l'analyse de sentiment.
-Il calcule la précision (accuracy) et le score F1 pour mesurer la qualité du modèle.
-
-Fonctionnalités :
-1. Chargement du modèle entraîné depuis le répertoire de sauvegarde.
-2. Chargement des données de test depuis un fichier CSV.
-3. Calcul des métriques d'évaluation (accuracy et F1-score).
-4. Affichage des résultats et sauvegarde des scores.
-
-Exemple d'utilisation :
-    python evaluate.py --test_path data/processed/test.csv --model_dir models/distilbert
-"""
-
 import pandas as pd
 from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
 from sklearn.metrics import accuracy_score, f1_score

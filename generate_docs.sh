@@ -1,3 +1,5 @@
+#!/bin/bash
+
 echo "Génération de la documentation avec Pydoc..."
 mkdir -p docs
 for script in scripts/*.py; do

@@ -33,13 +33,13 @@ jobs:
       run: pip install -r requirements.txt
 
     - name: Prétraitement des données
-      run: python scripts/preprocessing.py --data_path data/sentiment_analysis.csv
+      run: python scripts/preprocessing.py --data_path datas/sentiment_analysis.csv
 
     - name: Entraînement du modèle
-      run: python scripts/train.py --train_path data/processed/train.csv
+      run: python scripts/train.py --train_path datas/processed/train.csv
 
     - name: Évaluation du modèle
-      run: python scripts/evaluate.py --test_path data/processed/test.csv --model_dir models/distilbert
+      run: python scripts/evaluate.py --test_path datas/processed/test.csv --model_dir models/distilbert
 
     - name: Vérification du score
       id: check_score
@@ -62,11 +62,14 @@ jobs:
         HF_API_KEY: ${{ secrets.HF_API_KEY }}
       run: python scripts/deploy.py --model_dir models/distilbert --repo_name ${{ secrets.REPO_NAME }} --api_token ${{ secrets.HF_API_KEY }}
 
+    - name: Génération de la documentation
+      run: bash generate_docs.sh
+
+    - name: Compression de la documentation
+      run: zip -r docs.zip docs/
+
     - name: Envoi d'un e-mail de notification
       env:
         SMTP_USER: ${{ secrets.SMTP_USER }}
         SMTP_PASS: ${{ secrets.SMTP_PASS }}
-      run: python scripts/send_email.py --smtp_user $SMTP_USER --smtp_pass $SMTP_PASS --recipient danielledjofang2003@gmail.com nchourupouom04@gmail.com --subject "CI/CD Status" --message "Pipeline terminé. Voir les logs pour plus de détails."
-
-    - name: Génération de la documentation
-      run: bash generate_docs.sh
+      run: python scripts/send_email.py --smtp_user "$SMTP_USER" --smtp_pass "$SMTP_PASS" --recipient "danielledjofang2003@gmail.com,nchourupouom04@gmail.com, ngouedavidrogeryannick@gmail.com" --subject "CI/CD Status" --message "Pipeline terminé. Voir les logs pour plus de détails." --attachment docs.zip

@@ -1,17 +1,3 @@
-"""
-Ce script est chargé de déployer le modèle entraîné sur la plateforme Hugging Face.
-Il utilise l'API Hugging Face pour pousser les fichiers du modèle dans un dépôt distant.
-
-Fonctionnalités :
-1. Chargement du modèle depuis le répertoire local.
-2. Connexion à l'API Hugging Face via un token d'authentification.
-3. Envoi du modèle sur le dépôt distant.
-4. Vérification du déploiement réussi.
-
-Exemple d'utilisation :
-    python deploy.py --model_dir models/distilbert --repo_name username/sentiment-analysis --api_token HF_API_KEY
-"""
-
 from huggingface_hub import HfApi, HfFolder
 import argparse
 import os
@@ -23,7 +9,7 @@ class ModelDeployer:
 
         Args:
             model_dir (str): Répertoire contenant le modèle entraîné.
-            repo_name (str): Nom du dépôt sur Hugging Face.
+            repo_name (str): Nom du dépôt sur Hugging Face (ex: username/model-name).
             api_token (str): Token d'authentification API Hugging Face.
         """
         self.model_dir = model_dir
@@ -36,19 +22,25 @@ class ModelDeployer:
         """
         api = HfApi()
         try:
+            # Créer le dépôt si non existant
+            print(f"Vérification ou création du dépôt : {self.repo_name}")
+            api.create_repo(repo_id=self.repo_name, token=self.api_token, exist_ok=True)
+
+            # Déploiement du modèle
+            print("Déploiement en cours...")
             api.upload_folder(
                 repo_id=self.repo_name,
                 folder_path=self.model_dir,
                 token=self.api_token
             )
-            print(f"Modèle déployé avec succès sur Hugging Face dans le dépôt '{self.repo_name}'.")
+            print(f"✅ Modèle déployé avec succès sur Hugging Face : https://huggingface.co/{self.repo_name}")
         except Exception as e:
-            print(f"Échec du déploiement : {e}")
+            print(f"❌ Échec du déploiement : {e}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Déploiement du modèle sur Hugging Face.")
     parser.add_argument("--model_dir", type=str, required=True, help="Répertoire contenant le modèle.")
-    parser.add_argument("--repo_name", type=str, required=True, help="Nom du dépôt Hugging Face.")
+    parser.add_argument("--repo_name", type=str, required=True, help="Nom du dépôt Hugging Face (ex: DavidNgoue/sentiment-analysis-project).")
     parser.add_argument("--api_token", type=str, required=True, help="Token API Hugging Face.")
     args = parser.parse_args()
 

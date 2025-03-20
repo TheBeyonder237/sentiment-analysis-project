@@ -1,96 +1,91 @@
-"""
-Ce script est chargé d'évaluer les performances du modèle entraîné pour l'analyse de sentiment.
-Il calcule la précision (accuracy) et le score F1 pour mesurer la qualité du modèle.
-
-Fonctionnalités :
-1. Chargement du modèle entraîné depuis le répertoire de sauvegarde.
-2. Chargement des données de test depuis un fichier CSV.
-3. Calcul des métriques d'évaluation (accuracy et F1-score).
-4. Affichage des résultats et sauvegarde des scores.
-
-Exemple d'utilisation :
-    python evaluate.py --test_path data/processed/test.csv --model_dir models/distilbert
-"""
-
 import pandas as pd
-from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
-from sklearn.metrics import accuracy_score, f1_score
-from datasets import Dataset
+import re
+import string
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
 import argparse
-import torch
 import os
+import nltk
 
-class ModelEvaluator:
-    def __init__(self, model_dir, test_path):
+nltk.download('stopwords')
+nltk.download('wordnet')
+
+class Preprocessing:
+    def __init__(self, data_path, output_dir="datas/processed"):
         """
-        Initialise l'évaluateur avec le répertoire du modèle et le chemin des données de test.
+        Initialise le prétraitement avec le chemin des données et le répertoire de sortie.
 
         Args:
-            model_dir (str): Répertoire contenant le modèle entraîné.
-            test_path (str): Chemin vers le fichier CSV des données de test.
+            data_path (str): Chemin du fichier CSV contenant les données.
+            output_dir (str): Répertoire où enregistrer les ensembles prétraités.
         """
-        self.model_dir = model_dir
-        self.test_path = test_path
-        self.tokenizer = DistilBertTokenizer.from_pretrained(model_dir)
-        self.model = DistilBertForSequenceClassification.from_pretrained(model_dir)
+        self.data_path = data_path
+        self.output_dir = output_dir
+        self.data = None
+        os.makedirs(self.output_dir, exist_ok=True)
 
-    def load_dataset(self):
+    def clean_text(self, text):
         """
-        Charge l'ensemble de test à partir du fichier CSV.
+        Nettoie le texte en supprimant les caractères spéciaux, les stop words et en appliquant la lemmatisation.
+
+        Args:
+            text (str): Texte à nettoyer.
 
         Returns:
-            Dataset: Ensemble de test formaté pour le modèle.
+            str: Texte nettoyé.
         """
-        df = pd.read_csv(self.test_path)
+        lemmatizer = WordNetLemmatizer()
+        stop_words = set(stopwords.words('english'))
+        
+        # Convertir en minuscule
+        text = text.lower()
+        # Retirer les caractères spéciaux et les chiffres
+        text = re.sub(f"[{string.punctuation}]", " ", text)
+        text = re.sub(r"\d+", "", text)
+        # Supprimer les mots vides
+        words = [lemmatizer.lemmatize(word) for word in text.split() if word not in stop_words]
+        return " ".join(words)
 
-        # Vérifier et remplacer les valeurs manquantes dans la colonne "text"
-        df['text'] = df['text'].fillna("").astype(str)
-
-        print("Colonnes détectées :", df.columns)
-        print("Types de données des colonnes :\n", df.dtypes)
-        print("Aperçu des premières lignes :\n", df.head())
-
-        dataset = Dataset.from_pandas(df)
-
-        def tokenize_function(examples):
-            texts = [str(text) for text in examples['text']]
-            return self.tokenizer(texts, padding='max_length', truncation=True, max_length=512)
-
-        dataset = dataset.map(tokenize_function, batched=True)
-        dataset.set_format(type='torch', columns=['input_ids', 'attention_mask', 'label'])
-        print("Données de test chargées avec succès.")
-        return dataset
-
-    def evaluate(self, test_dataset):
+    def load_data(self):
         """
-        Évalue le modèle sur l'ensemble de test.
-
-        Args:
-            test_dataset (Dataset): Ensemble de test prêt pour l'évaluation.
+        Charge les données depuis le fichier CSV.
+        
+        Raises:
+            FileNotFoundError: Si le fichier n'existe pas.
         """
-        predictions = []
-        labels = []
-        self.model.eval()
-        with torch.no_grad():
-            for batch in test_dataset:
-                inputs = {key: batch[key].unsqueeze(0) for key in ['input_ids', 'attention_mask']}
-                output = self.model(**inputs)
-                prediction = torch.argmax(output.logits, dim=1).item()
-                predictions.append(prediction)
-                labels.append(batch['label'])
-        accuracy = accuracy_score(labels, predictions)
-        f1 = f1_score(labels, predictions, average='weighted')
-        print(f"Accuracy: {accuracy:.4f}")
-        print(f"F1-score: {f1:.4f}")
-        with open(os.path.join(self.model_dir, "evaluation.txt"), "w") as f:
-            f.write(f"Accuracy: {accuracy:.4f}\nF1-score: {f1:.4f}\n")
+        try:
+            self.data = pd.read_csv(self.data_path)
+            print("Données chargées avec succès.")
+        except FileNotFoundError:
+            print(f"Erreur : Le fichier {self.data_path} est introuvable.")
+            raise
+
+    def preprocess(self):
+        """
+        Effectue le prétraitement des données :
+        1. Supprime les valeurs manquantes.
+        2. Nettoie les textes.
+        3. Encode les sentiments en entiers.
+        4. Sépare les données en ensembles d'entraînement et de test.
+        """
+        self.data.dropna(inplace=True)
+        self.data['text'] = self.data['text'].apply(self.clean_text)
+
+        encoder = LabelEncoder()
+        self.data['label'] = encoder.fit_transform(self.data['sentiment'])
+        
+        train, test = train_test_split(self.data, test_size=0.2, random_state=42, stratify=self.data['label'])
+        train.to_csv(os.path.join(self.output_dir, "train.csv"), index=False)
+        test.to_csv(os.path.join(self.output_dir, "test.csv"), index=False)
+        print("Prétraitement terminé et ensembles enregistrés.")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Évaluation du modèle de sentiment analysis.")
-    parser.add_argument("--test_path", type=str, required=True, help="Chemin vers le fichier de test.")
-    parser.add_argument("--model_dir", type=str, required=True, help="Répertoire du modèle entraîné.")
+    parser = argparse.ArgumentParser(description="Prétraitement des données de sentiment analysis.")
+    parser.add_argument("--data_path", type=str, required=True, help="Chemin vers le fichier CSV des données.")
     args = parser.parse_args()
 
-    evaluator = ModelEvaluator(model_dir=args.model_dir, test_path=args.test_path)
-    test_dataset = evaluator.load_dataset()
-    evaluator.evaluate(test_dataset)
+    preprocessor = Preprocessing(data_path=args.data_path)
+    preprocessor.load_data()
+    preprocessor.preprocess()

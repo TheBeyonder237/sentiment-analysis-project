@@ -31,7 +31,7 @@ class EmailNotifier:
         """
         self.smtp_user = smtp_user
         self.smtp_pass = smtp_pass
-        self.recipient = recipient
+        self.recipients = recipient.split(",")  
         self.subject = subject
         self.message = message
 
@@ -42,7 +42,7 @@ class EmailNotifier:
         try:
             msg = MIMEMultipart()
             msg['From'] = self.smtp_user
-            msg['To'] = self.recipient
+            msg['To'] = ", ".join(self.recipients)
             msg['Subject'] = self.subject
             msg.attach(MIMEText(self.message, 'plain'))
 
@@ -50,7 +50,7 @@ class EmailNotifier:
                 server.starttls()
                 server.login(self.smtp_user, self.smtp_pass)
                 server.send_message(msg)
-                print(f"E-mail envoyé avec succès à {self.recipient}.")
+                print(f"E-mail envoyé avec succès à {', '.join(self.recipients)}.")
         except Exception as e:
             print(f"Erreur lors de l'envoi de l'e-mail : {e}")
 

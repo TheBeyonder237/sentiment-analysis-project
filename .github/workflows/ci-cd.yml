@@ -1,0 +1,72 @@
+name: Sentiment Analysis CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout du code
+      uses: actions/checkout@v2
+
+    - name: Configuration de Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Installation de Git LFS
+      run: |
+        apt-get update && apt-get install -y git-lfs
+        git lfs install
+        git lfs track "*.bin" "*.h5" "*.pt" "*.model" "*.csv"
+        echo "Git LFS initialisé avec succès."
+
+    - name: Vérification des fichiers LFS
+      run: git lfs ls-files
+
+    - name: Installation des dépendances
+      run: pip install -r requirements.txt
+
+    - name: Prétraitement des données
+      run: python scripts/preprocessing.py --data_path data/sentiment_analysis.csv
+
+    - name: Entraînement du modèle
+      run: python scripts/train.py --train_path data/processed/train.csv
+
+    - name: Évaluation du modèle
+      run: python scripts/evaluate.py --test_path data/processed/test.csv --model_dir models/distilbert
+
+    - name: Vérification du score
+      id: check_score
+      run: |
+        score=$(grep 'Accuracy' models/distilbert/evaluation.txt | cut -d' ' -f2)
+        threshold=${{ secrets.THRESHOLD_SCORE }}
+        echo "Score obtenu : $score"
+        echo "Threshold défini : $threshold"
+        if (( $(echo "$score >= $threshold" | bc -l) )); then
+          echo "Déploiement autorisé"
+          echo "::set-output name=deploy::true"
+        else
+          echo "Déploiement refusé"
+          echo "::set-output name=deploy::false"
+        fi
+
+    - name: Déploiement conditionnel sur Hugging Face
+      if: steps.check_score.outputs.deploy == 'true'
+      env:
+        HF_API_KEY: ${{ secrets.HF_API_KEY }}
+      run: python scripts/deploy.py --model_dir models/distilbert --repo_name ${{ secrets.REPO_NAME }} --api_token ${{ secrets.HF_API_KEY }}
+
+    - name: Envoi d'un e-mail de notification
+      env:
+        SMTP_USER: ${{ secrets.SMTP_USER }}
+        SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      run: python scripts/send_email.py --smtp_user $SMTP_USER --smtp_pass $SMTP_PASS --recipient danielledjofang2003@gmail.com nchourupouom04@gmail.com --subject "CI/CD Status" --message "Pipeline terminé. Voir les logs pour plus de détails."
+
+    - name: Génération de la documentation
+      run: bash generate_docs.sh

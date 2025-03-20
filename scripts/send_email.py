@@ -61,7 +61,8 @@ if __name__ == "__main__":
     parser.add_argument("--recipient", type=str, required=True, help="Adresse e-mail du destinataire.")
     parser.add_argument("--subject", type=str, required=True, help="Objet de l'e-mail.")
     parser.add_argument("--message", type=str, required=True, help="Contenu du message.")
+    parser.add_argument("--attachment", type=str, help="Chemin vers le fichier à joindre.")
     args = parser.parse_args()
 
-    notifier = EmailNotifier(smtp_user=args.smtp_user, smtp_pass=args.smtp_pass, recipient=args.recipient, subject=args.subject, message=args.message)
+    notifier = EmailNotifier(smtp_user=args.smtp_user, smtp_pass=args.smtp_pass, recipient=args.recipient, subject=args.subject, message=args.message, attachment=args.attachment)
     notifier.send()

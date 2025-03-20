@@ -62,14 +62,14 @@ jobs:
         HF_API_KEY: ${{ secrets.HF_API_KEY }}
       run: python scripts/deploy.py --model_dir models/distilbert --repo_name ${{ secrets.REPO_NAME }} --api_token ${{ secrets.HF_API_KEY }}
 
+    - name: Génération de la documentation
+      run: bash generate_docs.sh
+
+    - name: Compression de la documentation
+      run: zip -r docs.zip docs/
+
     - name: Envoi d'un e-mail de notification
       env:
         SMTP_USER: ${{ secrets.SMTP_USER }}
         SMTP_PASS: ${{ secrets.SMTP_PASS }}
-      run: python scripts/send_email.py --smtp_user "$SMTP_USER" --smtp_pass "$SMTP_PASS" --recipient "danielledjofang2003@gmail.com,nchourupouom04@gmail.com" --subject "CI/CD Status" --message "Pipeline terminé. Voir les logs pour plus de détails."
-
-
-    - name: Génération de la documentation
-      run: bash generate_docs.sh
-
-      
+      run: python scripts/send_email.py --smtp_user "$SMTP_USER" --smtp_pass "$SMTP_PASS" --recipient "danielledjofang2003@gmail.com,nchourupouom04@gmail.com, ngouedavidrogeryannick@gmail.com" --subject "CI/CD Status" --message "Pipeline terminé. Voir les logs pour plus de détails." --attachment docs.zip

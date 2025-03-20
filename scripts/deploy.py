@@ -9,7 +9,7 @@ class ModelDeployer:
 
         Args:
             model_dir (str): Répertoire contenant le modèle entraîné.
-            repo_name (str): Nom du dépôt sur Hugging Face.
+            repo_name (str): Nom du dépôt sur Hugging Face (ex: username/model-name).
             api_token (str): Token d'authentification API Hugging Face.
         """
         self.model_dir = model_dir
@@ -22,19 +22,25 @@ class ModelDeployer:
         """
         api = HfApi()
         try:
+            # Créer le dépôt si non existant
+            print(f"Vérification ou création du dépôt : {self.repo_name}")
+            api.create_repo(name=self.repo_name, token=self.api_token, exist_ok=True)
+
+            # Déploiement du modèle
+            print("Déploiement en cours...")
             api.upload_folder(
                 repo_id=self.repo_name,
                 folder_path=self.model_dir,
                 token=self.api_token
             )
-            print(f"Modèle déployé avec succès sur Hugging Face dans le dépôt '{self.repo_name}'.")
+            print(f"✅ Modèle déployé avec succès sur Hugging Face : https://huggingface.co/{self.repo_name}")
         except Exception as e:
-            print(f"Échec du déploiement : {e}")
+            print(f"❌ Échec du déploiement : {e}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Déploiement du modèle sur Hugging Face.")
     parser.add_argument("--model_dir", type=str, required=True, help="Répertoire contenant le modèle.")
-    parser.add_argument("--repo_name", type=str, required=True, help="Nom du dépôt Hugging Face.")
+    parser.add_argument("--repo_name", type=str, required=True, help="Nom du dépôt Hugging Face (ex: username/model-name).")
     parser.add_argument("--api_token", type=str, required=True, help="Token API Hugging Face.")
     args = parser.parse_args()
 
